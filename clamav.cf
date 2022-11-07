@@ -4,11 +4,19 @@ full AV_CLAMAV eval:check_clamav('OFFICIAL')
 describe AV_CLAMAV Clamav AntiVirus detected a virus
 score AV_CLAMAV 10
 
-full AV_CLAMAV_S eval:check_clamav('SecuriteInfo')
+full AV_CLAMAV_S eval:check_clamav('UNOFFICIAL')
 describe AV_CLAMAV_S Clamav AntiVirus detected a virus
-score AV_CLAMAV_S 2.5
+score AV_CLAMAV_S 10
 
-if can(Mail::SpamAssassin::Conf::feature_subjprefix)
-  subjprefix AV_CLAMAV ***VIRUS***
-  subjprefix AV_CLAMAV_S ***VIRUS***
-endif
+
+
+#full AV_CLAMAV_S eval:check_clamav('SecuriteInfo')
+#describe AV_CLAMAV_S Clamav AntiVirus detected a virus
+#score AV_CLAMAV_S 2.5
+
+#if can(Mail::SpamAssassin::Conf::feature_subjprefix)
+#  subjprefix AV_CLAMAV ***VIRUS***
+#  subjprefix AV_CLAMAV_S ***VIRUS***
+#endif
+
+add_header all Virus _CLAMAVRESULT_
