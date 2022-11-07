@@ -172,7 +172,7 @@ sub _check_clamav {
   my($self, $pms, $fulltext) = @_;
 
   my $isspam = 0;
-
+  my $header = "Error (Unknown error)";
   my $conf = $self->{main}->{registryboundaries}->{conf};
 
   if (!HAS_SCAN_CLAMAV and !HAS_CLIENT_CLAMAV) {
@@ -196,20 +196,34 @@ sub _check_clamav {
     }
 
     if (!$code) {
-      my $error = $clamav->errstr();
-      dbg("Clamd error: $error");
+	  my $errstr = $clamav->errstr();
+      dbg("Error ($errstr)");
+	  $header = "Error ($errstr)";
     } elsif ($code eq 'OK') {
       # No virus found
+	  dbg("Clamd response: $code");
+	  $header = "No";
     } elsif ($code eq 'FOUND') {
+	  dbg("Clamd response: $code");
+	  $header = "Yes ($virus)";
       $isspam = 1;
 
       $pms->{clamav_virus} = $virus;
+	  # include the virus name in SpamAssassin's report
+      #$pms->test_log($virus);
     } else {
       dbg("Error (Unknown return code from Clamav: $code");
+	  $header = "Error (Unknown return code from Clamav: $code";
     }
   } else {
     dbg("Cannot connect to Clamav on socket $conf->{clamd_sock}");
   }
+  
+  # Set header and return spam status
+  dbg("ClamAV: result - $header");
+  $pms->set_tag('CLAMAVRESULT', $header);
+  # add a metadatum so that rules can match against the result too
+  #$pms->{msg}->put_metadata('X-Spam-Virus',$header);
   return $isspam;
 }
 
